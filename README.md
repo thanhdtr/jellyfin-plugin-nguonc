@@ -12,33 +12,75 @@ A Jellyfin channel plugin that integrates with the [phim.nguonc.com](https://phi
 
 ## Installation
 
-### Method 1: Manual Installation (Recommended)
+### Method 1: Jellyfin Repository (Easiest)
 
-1. Download the latest release from [Releases](https://github.com/yourusername/Jellyfin.Plugin.NguonC/releases)
-2. Copy `Jellyfin.Plugin.NguonC.dll` to your Jellyfin plugins directory:
-   - **Windows**: `%ProgramData%\Jellyfin\Server\plugins\`
-   - **Linux**: `/var/lib/jellyfin/plugins/`
-   - **Docker**: `/config/plugins/`
-3. Restart Jellyfin server
-4. Enable the plugin in Dashboard → Plugins
+1. Open Jellyfin **Dashboard → Plugins → Repositories**
+2. Click **"+"** to add a new repository:
+   - **Repository Name:** `NguonC Plugin Repository`
+   - **Repository URL:** `https://raw.githubusercontent.com/thanhdtr/jellyfin-plugin-nguonc/main/manifest.json`
+3. Save, then go to **Dashboard → Plugins → Available**
+4. Install **NguonC - Phim HD** and restart Jellyfin
 
-### Method 2: Build from Source
+### Method 2: Docker (Manual)
+
+#### Option A: Download from Release
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/Jellyfin.Plugin.NguonC.git
-cd Jellyfin.Plugin.NguonC
+# Find your Jellyfin container name
+docker ps | grep jellyfin
 
-# Build the plugin
+# Download and install the plugin
+docker exec jellyfin bash -c '
+  mkdir -p /config/plugins/Jellyfin.Plugin.NguonC &&
+  cd /config/plugins/Jellyfin.Plugin.NguonC &&
+  curl -L -o plugin.zip https://github.com/thanhdtr/jellyfin-plugin-nguonc/releases/download/v1.0.0/Jellyfin.Plugin.NguonC-1.0.0.zip &&
+  unzip -o plugin.zip &&
+  rm plugin.zip
+'
+
+# Restart the container
+docker restart jellyfin
+```
+
+#### Option B: Build from Source
+
+```bash
+# Clone and build
+git clone https://github.com/thanhdtr/jellyfin-plugin-nguonc.git
+cd jellyfin-plugin-nguonc
 dotnet build -c Release
 
-# Copy the built DLL to Jellyfin plugins directory
-cp bin/Release/net8.0/Jellyfin.Plugin.NguonC.dll /path/to/jellyfin/plugins/
+# Copy the DLL into the container
+docker cp bin/Release/net9.0/Jellyfin.Plugin.NguonC.dll \
+  jellyfin:/config/plugins/Jellyfin.Plugin.NguonC/Jellyfin.Plugin.NguonC.dll
+
+# Restart the container
+docker restart jellyfin
 ```
+
+#### Option C: Docker Compose Volume Mount
+
+If you have Jellyfin's plugin directory mounted as a volume:
+
+```bash
+# Build locally
+dotnet build -c Release
+
+# Copy to your mounted plugins directory
+cp bin/Release/net9.0/Jellyfin.Plugin.NguonC.dll /path/to/jellyfin/plugins/Jellyfin.Plugin.NguonC/
+```
+
+### Method 3: Windows / Linux (Manual)
+
+1. Download `Jellyfin.Plugin.NguonC-1.0.0.zip` from [Releases](https://github.com/thanhdtr/jellyfin-plugin-nguonc/releases)
+2. Extract to your Jellyfin plugins directory:
+   - **Windows**: `%ProgramData%\Jellyfin\Server\plugins\Jellyfin.Plugin.NguonC\`
+   - **Linux**: `/var/lib/jellyfin/plugins/Jellyfin.Plugin.NguonC/`
+3. Restart Jellyfin server
 
 ## Configuration
 
-1. Go to **Dashboard → Plugins → NguonC**
+1. Go to **Dashboard → Plugins → NguonC - Phim HD → Settings**
 2. Configure the following settings:
    - **API Base URL**: Default is `https://phim.nguonc.com/api`
    - **Items Per Page**: Number of items to display (default: 24)
@@ -74,13 +116,13 @@ The plugin exposes these API endpoints through the Jellyfin server:
 ## Requirements
 
 - Jellyfin Server 10.10.x or later
-- .NET 8.0 runtime
+- .NET 9.0 runtime
 - Internet connection to access phim.nguonc.com API
 
 ## Troubleshooting
 
 ### Plugin not showing up
-- Ensure the DLL is in the correct plugins directory
+- Ensure the DLL is in the correct plugins directory (`/config/plugins/Jellyfin.Plugin.NguonC/` for Docker)
 - Check Jellyfin logs for any startup errors
 - Restart the Jellyfin server
 
@@ -92,6 +134,10 @@ The plugin exposes these API endpoints through the Jellyfin server:
 ### Slow loading
 - Try adjusting the Items Per Page setting
 - Check your network connection to phim.nguonc.com
+
+### Config page blank
+- Update to the latest version (v1.0.0)
+- The config page uses Jellyfin's dashboard framework — it must be loaded through the plugin system
 
 ## License
 
