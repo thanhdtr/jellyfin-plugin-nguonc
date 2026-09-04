@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "name": "NguonC - Phim HD",
+  "description": "Stream Vietnamese movies and TV shows from phim.nguonc.com",
+  "overview": "A Jellyfin channel plugin that integrates with the phim.nguonc.com API to browse and stream Vietnamese movies and TV shows with multiple server options (Vietsub, Thuyết Minh, Lồng Tiếng).",
+  "ownerUrl": "https://phim.nguonc.com",
+  "category": "Channels",
+  "imageUrl": "https://phim.nguonc.com/favicon.ico",
+  "versions": [
+    {
+      "version": "1.0.0",
+      "changelog": "Initial release with browsing and streaming support",
+      "targetAbi": "10.10.0.0"
+    }
+  ]
+}
