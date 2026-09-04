@@ -4,73 +4,145 @@
     <meta charset="utf-8">
     <title>NguonC Plugin Configuration</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .config-container { max-width: 600px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        .description { color: #666; font-size: 0.9em; margin-top: 3px; }
-        .test-btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
-        .test-btn:hover { background: #0056b3; }
-        #test-result { margin-top: 15px; padding: 10px; border-radius: 4px; display: none; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
+        .configSection { padding: 1.5em; }
+        .configSection h2 { margin-top: 0; }
+        .inputContainer { margin-bottom: 1em; }
+        .inputContainer label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .inputContainer input, .inputContainer select {
+            width: 100%; max-width: 400px; padding: 8px 10px;
+            border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+        }
+        .fieldDescription { color: #999; font-size: 0.85em; margin-top: 3px; }
+        .btn-test {
+            background: #007bff; color: #fff; border: none; border-radius: 4px;
+            padding: 8px 16px; cursor: pointer; font-size: 14px; margin-top: 0.5em;
+        }
+        .btn-test:hover { background: #0056b3; }
+        #testResult { margin-top: 10px; padding: 10px; border-radius: 4px; display: none; }
+        .result-ok { background: #d4edda; color: #155724; }
+        .result-fail { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <div class="config-container">
-        <h2>🎬 NguonC - Phim HD Configuration</h2>
-        
-        <div class="form-group">
-            <label for="ApiBaseUrl">API Base URL</label>
-            <input type="text" id="ApiBaseUrl" value="https://phim.nguonc.com/api">
-            <div class="description">Base URL for the NguonC API. Default: https://phim.nguonc.com/api</div>
+    <div class="configSection">
+        <div class="verticalSection">
+            <h2>🎬 NguonC - Phim HD</h2>
+            <p>Configure the NguonC plugin for streaming Vietnamese movies.</p>
         </div>
 
-        <div class="form-group">
-            <label for="ItemsPerPage">Items Per Page</label>
-            <input type="number" id="ItemsPerPage" value="24" min="6" max="48">
-            <div class="description">Number of items to display per page (6-48)</div>
-        </div>
+        <div class="verticalSection">
+            <div class="inputContainer">
+                <label for="txtApiBaseUrl">API Base URL</label>
+                <input type="text" id="txtApiBaseUrl" />
+                <div class="fieldDescription">Default: https://phim.nguonc.com/api</div>
+            </div>
 
-        <div class="form-group">
-            <label for="PreferredLanguage">Preferred Language</label>
-            <select id="PreferredLanguage">
-                <option value="all">All (Show all servers)</option>
-                <option value="vietsub">Vietsub (Subtitle)</option>
-                <option value="thuyetminh">Thuyết Minh (Dubbed)</option>
-                <option value="longtieng">Lồng Tiếng (Voice-over)</option>
-            </select>
-            <div class="description">Preferred language/subtitle option for video playback</div>
-        </div>
+            <div class="inputContainer">
+                <label for="selectItemsPerPage">Items Per Page</label>
+                <select id="selectItemsPerPage">
+                    <option value="12">12</option>
+                    <option value="24" selected>24</option>
+                    <option value="36">36</option>
+                    <option value="48">48</option>
+                </select>
+                <div class="fieldDescription">Number of items displayed per page</div>
+            </div>
 
-        <button class="test-btn" onclick="testApiConnection()">Test API Connection</button>
-        <div id="test-result"></div>
+            <div class="inputContainer">
+                <label for="selectPreferredLanguage">Preferred Language</label>
+                <select id="selectPreferredLanguage">
+                    <option value="all">All (Show all servers)</option>
+                    <option value="vietsub">Vietsub (Subtitle)</option>
+                    <option value="thuyetminh">Thuyết Minh (Dubbed)</option>
+                    <option value="longtieng">Lồng Tiếng (Voice-over)</option>
+                </select>
+                <div class="fieldDescription">Default language/subtitle for video playback</div>
+            </div>
+
+            <div>
+                <button is="emby-button" type="button" class="btn-test" onclick="testApi()">
+                    Test API Connection
+                </button>
+                <div id="testResult"></div>
+            </div>
+
+            <br/>
+            <div>
+                <button is="emby-button" type="button" class="raised submit" onclick="saveConfig()">
+                    Save
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        function testApiConnection() {
-            const baseUrl = document.getElementById('ApiBaseUrl').value;
-            const resultDiv = document.getElementById('test-result');
-            resultDiv.style.display = 'block';
-            resultDiv.className = '';
-            resultDiv.textContent = 'Testing connection...';
+        var PLUGIN_ID = "985ffaa5-8651-43fb-ba41-96939299d576";
 
-            fetch(`${baseUrl}/films/phim-moi-cap-nhat?page=1`)
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error(`HTTP ${response.status}`);
-                })
-                .then(data => {
-                    resultDiv.className = 'success';
-                    resultDiv.textContent = `✅ Connection successful! Found ${data.paginate?.total_items || '?'} films. API is working correctly.`;
-                })
-                .catch(error => {
-                    resultDiv.className = 'error';
-                    resultDiv.textContent = `❌ Connection failed: ${error.message}. Please check the API URL and try again.`;
+        function loadConfig() {
+            var ApiClient = getApiClient();
+            if (!ApiClient) return;
+
+            ApiClient.getPluginConfiguration(PLUGIN_ID).then(function (config) {
+                document.getElementById('txtApiBaseUrl').value = config.ApiBaseUrl || 'https://phim.nguonc.com/api';
+                document.getElementById('selectItemsPerPage').value = String(config.ItemsPerPage || 24);
+                document.getElementById('selectPreferredLanguage').value = config.PreferredLanguage || 'all';
+            });
+        }
+
+        function saveConfig() {
+            var ApiClient = getApiClient();
+            if (!ApiClient) return;
+
+            var config = {
+                ApiBaseUrl: document.getElementById('txtApiBaseUrl').value || 'https://phim.nguonc.com/api',
+                ItemsPerPage: parseInt(document.getElementById('selectItemsPerPage').value, 10) || 24,
+                PreferredLanguage: document.getElementById('selectPreferredLanguage').value || 'all'
+            };
+
+            ApiClient.updatePluginConfiguration(PLUGIN_ID, config).then(function () {
+                Dashboard.processPluginConfigurationUpdateResult({
+                    pluginId: PLUGIN_ID
                 });
+            });
+        }
+
+        function testApi() {
+            var baseUrl = document.getElementById('txtApiBaseUrl').value || 'https://phim.nguonc.com/api';
+            var el = document.getElementById('testResult');
+            el.style.display = 'block';
+            el.className = '';
+            el.textContent = 'Testing connection...';
+
+            fetch(baseUrl + '/films/phim-moi-cap-nhat?page=1')
+                .then(function (resp) {
+                    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                    return resp.json();
+                })
+                .then(function (data) {
+                    el.className = 'result-ok';
+                    el.textContent = '✅ Connection successful! Found ' +
+                        (data.paginate ? data.paginate.total_items + ' films' : 'data') +
+                        '. API is working.';
+                })
+                .catch(function (err) {
+                    el.className = 'result-fail';
+                    el.textContent = '❌ Connection failed: ' + err.message;
+                });
+        }
+
+        function getApiClient() {
+            return window.ApiClient || (window.Dashboard && Dashboard.getApiClient());
+        }
+
+        document.addEventListener('viewshow', function () {
+            loadConfig();
+        });
+
+        // Also try loading on DOM ready as fallback
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadConfig);
+        } else {
+            loadConfig();
         }
     </script>
 </body>
